@@ -17,15 +17,15 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$CODEBUILD_GIT_BRANCH
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:development
       - echo "Tagging Done."
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
-      - docker push $REPOSITORY_URI:$CODEBUILD_GIT_BRANCH
+      - docker push $REPOSITORY_URI:development
       - echo Writing image definitions file...
-      - printf '[{"name":"demo","imageUri":"%s"}]' $REPOSITORY_URI:$CODEBUILD_GIT_BRANCH > imagedefinitions.json
+      - printf '[{"name":"demo","imageUri":"%s"}]' $REPOSITORY_URI:development > imagedefinitions.json
 artifacts:
     files: imagedefinitions.json
