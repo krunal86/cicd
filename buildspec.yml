@@ -5,13 +5,14 @@ phases:
     commands:
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
       - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
-      - curl -fsSL https://raw.githubusercontent.com/thii/aws-codebuild-extras/master/install >> extras.sh
-      - . ./extras.sh
   pre_build:
     commands:
       - echo "AWS Login"
       - $(aws ecr get-login --registry-ids $AWS_ACCOUNT_ID --no-include-email --region $AWS_DEFAULT_REGION)
       - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME
+      - echo "$REPOSITORY_URI"
+      - echo $REPOSITORY_URI
+      - echo $(REPOSITORY_URI)
       - echo $CODEBUILD_WEBHOOK_TRIGGER
       - IMAGE_TAG=$(echo ${CODEBUILD_WEBHOOK_TRIGGER:3})
   build:
@@ -19,14 +20,14 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:IMAGE_TAG
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:development
       - echo "Tagging Done."
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-      - docker push $REPOSITORY_URI:IMAGE_TAG
+      - docker push $REPOSITORY_URI:development
       - echo Writing image definitions file...
-      - printf '[{"name":"demo","imageUri":"%s"}]' $REPOSITORY_URI:IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"demo","imageUri":"%s"}]' $REPOSITORY_URI:development > imagedefinitions.json
 artifacts:
     files: imagedefinitions.json
